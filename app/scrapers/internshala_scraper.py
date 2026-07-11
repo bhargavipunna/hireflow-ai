@@ -1,32 +1,39 @@
 from app.scrapers.base_scraper import BaseScraper
+from app.models.job import Job
 
 
 class InternshalaScraper(BaseScraper):
 
+    def __init__(self):
+        super().__init__("Internshala")
+
     def scrape(self):
 
-        return [
+        jobs = [
 
-            {
-                "title": "Python Intern",
+            Job(
+                title="Python Intern",
 
-                "company": "TechVision",
+                company="TechVision",
 
-                "location": "Hyderabad",
+                location="Hyderabad",
 
-                "description":
-                """
-                Python
-                Flask
-                APIs
-                SQL
-                """,
+                description="""
+                            Python
+                            Flask
+                            APIs
+                            SQL
+                            """,
 
-                "apply_link":
-                "https://example.com/intern",
+                apply_link="https://example.com/intern",
 
-                "source":
-                "internshala"
-            }
+                source="internshala",
+
+                job_type="Internship",
+
+                posted_date="Today"
+            )
 
         ]
+
+        return jobs

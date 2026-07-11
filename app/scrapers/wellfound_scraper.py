@@ -1,51 +1,59 @@
 from app.scrapers.base_scraper import BaseScraper
+from app.models.job import Job
 
 
 class WellfoundScraper(BaseScraper):
 
+    def __init__(self):
+        super().__init__("Wellfound")
+
     def scrape(self):
 
-        return [
+        jobs = [
 
-            {
-                "title": "AI Engineer",
-                "company": "StartupAI",
-                "location": "Remote",
+            Job(
+                title="AI Engineer",
+                company="StartupAI",
+                location="Remote",
 
-                "description":
-                """
-                Python
-                FastAPI
-                RAG
-                LangGraph
-                LLMs
-                """,
+                description="""
+Python
+FastAPI
+RAG
+LangGraph
+LLMs
+""",
 
-                "apply_link":
-                "https://example.com/apply",
+                apply_link="https://example.com/apply",
 
-                "source":
-                "wellfound"
-            },
+                source="wellfound",
 
-            {
-                "title": "GenAI Intern",
-                "company": "Future Labs",
-                "location": "Remote",
+                job_type="Full Time",
 
-                "description":
-                """
-                Machine Learning
-                Deep Learning
-                Python
-                Generative AI
-                """,
+                posted_date="Today"
+            ),
 
-                "apply_link":
-                "https://example.com/apply2",
+            Job(
+                title="GenAI Intern",
+                company="Future Labs",
+                location="Remote",
 
-                "source":
-                "wellfound"
-            }
+                description="""
+Machine Learning
+Deep Learning
+Python
+Generative AI
+""",
+
+                apply_link="https://example.com/apply2",
+
+                source="wellfound",
+
+                job_type="Internship",
+
+                posted_date="Today"
+            )
 
         ]
+
+        return jobs
