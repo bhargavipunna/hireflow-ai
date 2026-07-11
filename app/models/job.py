@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class Job:
 
@@ -15,3 +14,11 @@ class Job:
     apply_link: str
 
     source: str
+
+    job_type: str
+
+    posted_date: str
+
+    salary: str = ""
+
+    experience: str = ""
