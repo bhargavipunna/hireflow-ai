@@ -20,6 +20,7 @@ from app.config.settings import (
     GENERATED_RESUME_DIR,
     MATCH_THRESHOLD,
     REPORT_DIR,
+    TOP_MATCHES,
 )
 from app.models.application import Application
 from app.models.generated_doc import GeneratedDocument
@@ -51,10 +52,17 @@ class BaseAgent:
                 jobs.append(Job.from_dict(item))
         return jobs
 
-    def qualified_jobs(self, state: dict, threshold: int | None = None) -> list[Job]:
-        """Return only jobs at or above the threshold."""
+    def qualified_jobs(self, state: dict, threshold: int | None = None, limit: int | None = None) -> list[Job]:
+        """Return only jobs at or above the threshold, capped at *limit*.
+
+        Jobs are already sorted by score (descending) by the matcher,
+        so slicing the first *limit* gives the top matches.
+        """
         thr = threshold if threshold is not None else state.get("threshold", MATCH_THRESHOLD)
-        return [j for j in self.jobs_from_state(state) if j.score >= thr]
+        cap = limit if limit is not None else state.get("top_matches_limit", TOP_MATCHES)
+        jobs = [j for j in self.jobs_from_state(state) if j.score >= thr]
+        # Pre-sorted by matcher; just slice.
+        return jobs[:cap]
 
     def write_state_jobs(self, state: dict, key: str, jobs: Iterable[Job]) -> None:
         state[key] = [j.to_dict() for j in jobs]

@@ -63,4 +63,16 @@ class Job:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Job":
         known = {f for f in cls.__dataclass_fields__}  # type: ignore[attr-defined]
-        return cls(**{k: v for k, v in data.items() if k in known})
+        filtered = {k: v for k, v in data.items() if k in known}
+        # Supply safe defaults for required fields that old data may lack.
+        filtered.setdefault("job_type", "Full Time")
+        filtered.setdefault("posted_date", "")
+        filtered.setdefault("salary", "")
+        filtered.setdefault("experience", "")
+        filtered.setdefault("description", "")
+        filtered.setdefault("location", "Unknown")
+        filtered.setdefault("apply_link", "")
+        filtered.setdefault("source", "")
+        filtered.setdefault("title", "")
+        filtered.setdefault("company", "")
+        return cls(**filtered)
