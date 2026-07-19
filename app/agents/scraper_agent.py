@@ -1,56 +1,25 @@
-import json
+"""ScraperAgent: thin agent wrapper around ScraperManager.
 
-from app.scrapers.wellfound_scraper import (
-    WellfoundScraper
-)
+Collects jobs from every enabled source and writes them onto the state
+as plain dicts. Raw jobs are also persisted via the JobRepository.
+"""
 
-from app.scrapers.internshala_scraper import (
-    InternshalaScraper
-)
+from __future__ import annotations
 
-from app.scrapers.company_scraper import (
-    CompanyScraper
-)
+from app.agents.base_agent import BaseAgent
+from app.scrapers.scraper_manager import ScraperManager
 
 
-class ScraperAgent:
+class ScraperAgent(BaseAgent):
+    name = "scraper"
 
     def __init__(self):
+        super().__init__()
+        self.manager = ScraperManager()
 
-        self.scrapers = [
-
-            WellfoundScraper(),
-
-            InternshalaScraper(),
-
-            CompanyScraper()
-        ]
-
-    def run(self, state):
-
-        jobs = []
-
-        for scraper in self.scrapers:
-
-            jobs.extend(
-                scraper.scrape()
-            )
-
-        state["jobs"] = jobs
-
-        with open(
-            "data/jobs/raw_jobs.json",
-            "w"
-        ) as f:
-
-            json.dump(
-                jobs,
-                f,
-                indent=4
-            )
-
-        print(
-            f"Collected {len(jobs)} jobs"
-        )
-
+    def run(self, state: dict) -> dict:
+        self.log.info("Collecting jobs from all sources...")
+        jobs = self.manager.collect_jobs()
+        state["jobs"] = [j.to_dict() for j in jobs]
+        self.log.info("Collected %d jobs", len(jobs))
         return state

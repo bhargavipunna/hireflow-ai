@@ -6,14 +6,28 @@ __pycache__/
 
 data/chroma/
 
+data/generated_resumes/
+
+data/cover_letters/
+
+data/emails/
+
+data/reports/
+
+data/jobs/raw_jobs.json
+
+data/jobs/matched_jobs.json
+
+data/applications.json
+
+data/docs_index.json
+
+logs/
+
+config/sources/local.json
+
 *.pyc
 
 *.pyo
 
 *.DS_Store
-
-data/generated_resumes/
-
-data/jobs/raw_jobs.json
-
-data/jobs/matched_jobs.json

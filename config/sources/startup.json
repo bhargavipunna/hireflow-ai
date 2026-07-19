@@ -1,0 +1,43 @@
+{
+  "name": "Startup Career Pages",
+  "enabled": true,
+  "base_url": "",
+  "endpoints": [],
+  "selectors": {
+    "job_card": "[class*='job'], [class*='position'], [class*='opening']",
+    "title": "h2, h3, [class*='title']",
+    "company": "[class*='company'], [class*='brand']",
+    "location": "[class*='location']",
+    "link": "a[href*='job'], a[href*='career'], a[href*='apply']"
+  },
+  "companies": [
+    {
+      "name": "Sample Startup One",
+      "careers_url": "https://boards.greenhouse.io/samplestartup"
+    },
+    {
+      "name": "Sample Startup Two",
+      "careers_url": "https://jobs.lever.co/samplestartup"
+    }
+  ],
+  "fallback_jobs": [
+    {
+      "title": "Full Stack Engineer",
+      "company": "Sample Startup One",
+      "location": "Bangalore",
+      "description": "Python, React, PostgreSQL, AWS, REST APIs. Build customer-facing product features end-to-end.",
+      "apply_link": "https://boards.greenhouse.io/samplestartup/jobs/sample-fs",
+      "job_type": "Full Time",
+      "posted_date": "4 days ago"
+    },
+    {
+      "title": "Backend Intern",
+      "company": "Sample Startup Two",
+      "location": "Remote",
+      "description": "Python, Django, PostgreSQL, Docker, unit testing. Internship with backend platform team.",
+      "apply_link": "https://jobs.lever.co/samplestartup/jobs/sample-backend-intern",
+      "job_type": "Internship",
+      "posted_date": "1 day ago"
+    }
+  ]
+}

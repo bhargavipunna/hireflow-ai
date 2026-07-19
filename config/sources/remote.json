@@ -1,0 +1,36 @@
+{
+  "name": "Remote Job Boards",
+  "enabled": true,
+  "base_url": "",
+  "endpoints": [],
+  "feeds": [
+    {
+      "name": "RemoteOK",
+      "url": "https://remoteok.com/api?tags=python,ai"
+    },
+    {
+      "name": "WeWorkRemotely",
+      "url": "https://weworkremotely.com/remote-jobs.rss"
+    }
+  ],
+  "fallback_jobs": [
+    {
+      "title": "Remote Python Developer",
+      "company": "RemoteCo",
+      "location": "Remote (US)",
+      "description": "Python, FastAPI, PostgreSQL, async programming. Fully remote, US time-zone overlap.",
+      "apply_link": "https://remoteok.com/l/sample-python-dev",
+      "job_type": "Full Time",
+      "posted_date": "2 days ago"
+    },
+    {
+      "title": "Remote AI Research Intern",
+      "company": "DeepRemote",
+      "location": "Remote (Global)",
+      "description": "Python, PyTorch, Transformers, LLMs, research methodology. Open-source AI research project.",
+      "apply_link": "https://weworkremotely.com/sample-ai-research",
+      "job_type": "Internship",
+      "posted_date": "Today"
+    }
+  ]
+}

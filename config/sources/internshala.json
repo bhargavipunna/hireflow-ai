@@ -1,0 +1,36 @@
+{
+  "name": "Internshala",
+  "enabled": true,
+  "base_url": "https://internshala.com",
+  "endpoints": [
+    "https://internshala.com/internships/keywords-python",
+    "https://internshala.com/internships/keywords-machine%20learning"
+  ],
+  "selectors": {
+    "job_card": ".internship_meta, .individual_internship",
+    "title": ".heading_4_5 a, h3 a",
+    "company": ".company_name a, .link_display_like_text",
+    "location": "#location_names a, .location_link",
+    "link": ".heading_4_5 a, .view_detail_button"
+  },
+  "fallback_jobs": [
+    {
+      "title": "Python Intern",
+      "company": "TechVision",
+      "location": "Hyderabad",
+      "description": "Python, Flask, REST APIs, SQL. Build backend services and data pipelines for analytics products.",
+      "apply_link": "https://internshala.com/internship/sample-python-intern",
+      "job_type": "Internship",
+      "posted_date": "Today"
+    },
+    {
+      "title": "Machine Learning Intern",
+      "company": "DataNova Labs",
+      "location": "Bangalore",
+      "description": "Python, scikit-learn, PyTorch, Pandas, model evaluation. Train and deploy ML models for forecasting.",
+      "apply_link": "https://internshala.com/internship/sample-ml-intern",
+      "job_type": "Internship",
+      "posted_date": "2 days ago"
+    }
+  ]
+}

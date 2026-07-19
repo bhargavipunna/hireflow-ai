@@ -1,0 +1,47 @@
+{
+  "name": "MNC Career Pages",
+  "enabled": true,
+  "base_url": "",
+  "endpoints": [],
+  "selectors": {
+    "job_card": "[class*='job'], [class*='career'], li.job",
+    "title": "h2, h3, [class*='title']",
+    "company": "[class*='company']",
+    "location": "[class*='location']",
+    "link": "a[href]"
+  },
+  "companies": [
+    {
+      "name": "MassMutual India",
+      "careers_url": "https://www.massmutualindia.com/careers"
+    },
+    {
+      "name": "Amazon",
+      "careers_url": "https://www.amazon.jobs/en/teams/python"
+    },
+    {
+      "name": "Microsoft",
+      "careers_url": "https://careers.microsoft.com/v2/global/en/students.html"
+    }
+  ],
+  "fallback_jobs": [
+    {
+      "title": "Software Development Engineer",
+      "company": "Amazon",
+      "location": "Hyderabad",
+      "description": "Java/C++, data structures, distributed systems, AWS, system design. Build scalable backend services.",
+      "apply_link": "https://www.amazon.jobs/en/jobs/sample-sde",
+      "job_type": "Full Time",
+      "posted_date": "5 days ago"
+    },
+    {
+      "title": "Data & AI Engineer",
+      "company": "MassMutual India",
+      "location": "Hyderabad",
+      "description": "Python, SQL, Azure, ETL pipelines, ML model deployment. Insurance analytics domain.",
+      "apply_link": "https://www.massmutualindia.com/careers/sample-data-ai",
+      "job_type": "Full Time",
+      "posted_date": "3 days ago"
+    }
+  ]
+}

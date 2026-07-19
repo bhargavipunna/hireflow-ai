@@ -1,0 +1,36 @@
+{
+  "name": "Wellfound",
+  "enabled": true,
+  "base_url": "https://wellfound.com",
+  "endpoints": [
+    "https://wellfound.com/role/r/remote-python",
+    "https://wellfound.com/role/r/remote-ai-engineer"
+  ],
+  "selectors": {
+    "job_card": "[data-test*='JobListing'], section.styles_component",
+    "title": "h3, [data-test='job-title']",
+    "company": "a[href*='/company/']",
+    "location": "[data-test='location']",
+    "link": "a[href*='/jobs/']"
+  },
+  "fallback_jobs": [
+    {
+      "title": "AI Engineer",
+      "company": "StartupAI",
+      "location": "Remote",
+      "description": "Python, FastAPI, RAG, LangGraph, LLMs. Build agentic AI systems and retrieval pipelines. AWS deployment.",
+      "apply_link": "https://wellfound.com/jobs/sample-ai-engineer",
+      "job_type": "Full Time",
+      "posted_date": "Today"
+    },
+    {
+      "title": "GenAI Intern",
+      "company": "Future Labs",
+      "location": "Remote",
+      "description": "Machine Learning, Deep Learning, Python, Generative AI, Prompt Engineering. Research and prototype LLM applications.",
+      "apply_link": "https://wellfound.com/jobs/sample-genai-intern",
+      "job_type": "Internship",
+      "posted_date": "Today"
+    }
+  ]
+}

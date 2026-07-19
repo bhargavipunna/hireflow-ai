@@ -1,0 +1,14 @@
+{
+  "name": "Generic Company Career Pages",
+  "enabled": true,
+  "base_url": "",
+  "endpoints": [],
+  "selectors": {
+    "job_card": "[class*='job'], [class*='position'], li[data-job]",
+    "title": "h2, h3, [class*='title']",
+    "company": "meta[property='og:site_name'], title",
+    "location": "[class*='location']",
+    "link": "a[href]"
+  },
+  "fallback_jobs": []
+}

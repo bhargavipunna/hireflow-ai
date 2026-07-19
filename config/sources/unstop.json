@@ -1,0 +1,27 @@
+{
+  "name": "Unstop",
+  "enabled": true,
+  "base_url": "https://unstop.com",
+  "endpoints": [
+    "https://unstop.com/job-activities/python-developer",
+    "https://unstop.com/competitions/hackathons"
+  ],
+  "selectors": {
+    "job_card": ".single_profile.seemore_popup, .contest_list_item",
+    "title": ".title a, h3 a",
+    "company": ".organisation_name, .company_name",
+    "location": ".location_name, .location",
+    "link": ".title a, .btn_register"
+  },
+  "fallback_jobs": [
+    {
+      "title": "Software Engineer Intern",
+      "company": "Unstop Partner Startup",
+      "location": "Remote",
+      "description": "Python, Data Structures, Algorithms, problem solving. Competitive programming background preferred.",
+      "apply_link": "https://unstop.com/job/sample-swe-intern",
+      "job_type": "Internship",
+      "posted_date": "1 day ago"
+    }
+  ]
+}

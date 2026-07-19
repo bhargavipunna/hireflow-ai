@@ -1,34 +1,32 @@
+# --- AI / LLM / Embeddings ---
+ollama
+sentence-transformers
+chromadb
+
+# --- LangGraph orchestration ---
 langgraph
 langchain
 langchain-community
 langchain-core
 
-chromadb
-
-sentence-transformers
-
+# --- Document parsing ---
 pypdf
 
-ollama
-
-python-dotenv
-
-pydantic
-
-numpy
-
-pandas
-
+# --- Scraping ---
 requests
-
 beautifulsoup4
-
 lxml
+tenacity
+aiohttp
 
+# --- Data / utilities ---
+python-dotenv
+pydantic
+numpy
+pandas
+scikit-learn
 tqdm
 
+# --- API server (Phase 2) ---
 fastapi
-
 uvicorn
-
-scikit-learn

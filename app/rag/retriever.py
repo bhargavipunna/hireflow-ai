@@ -1,50 +1,29 @@
+"""Retriever: semantic search over the candidate's resume chunks.
+
+Wraps ChromaDB query with the shared embedding service and surfaces the
+top-K most relevant chunks for a given job description.
+"""
+
+from __future__ import annotations
+
+from app.config.logger import get_logger
+from app.config.settings import TOP_K
 from app.rag.vectordb import VectorDB
 from app.services.embedding_service import EmbeddingService
 
-from app.config.settings import TOP_K
+log = get_logger(__name__)
 
 
 class Retriever:
-
     def __init__(self):
-
         self.db = VectorDB()
-
         self.embedder = EmbeddingService()
 
-    def retrieve(
-        self,
-        query
-    ):
+    def retrieve(self, query: str, top_k: int = TOP_K) -> list[str]:
+        query_embedding = self.embedder.embed(query)
+        results = self.db.search(query_embedding, top_k)
+        docs = results["documents"][0] if results.get("documents") else []
 
-        query_embedding = self.embedder.embed(
-            query
-        )
-
-        results = self.db.search(
-            query_embedding,
-            TOP_K
-        )
-
-
-        return results["documents"][0]
-
-    def retrieve(self, query):
-
-        query_embedding = (
-            self.embedder.embed(query)
-        )
-
-        results = self.db.search(
-            query_embedding,
-            TOP_K
-        )
-
-        print("\nRETRIEVED CHUNKS")
-        print("=" * 50)
-
-        for doc in results["documents"][0]:
-            print(doc[:150])
-            print()
-
-        return results["documents"][0]
+        if docs:
+            log.debug("Retrieved %d chunks for query", len(docs))
+        return docs
