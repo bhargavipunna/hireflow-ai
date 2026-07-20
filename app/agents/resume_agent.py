@@ -8,6 +8,7 @@ generated-document repository.
 from __future__ import annotations
 
 import os
+import re
 
 from app.agents.base_agent import BaseAgent
 from app.config.settings import MATCH_THRESHOLD
@@ -23,7 +24,33 @@ class ResumeAgent(BaseAgent):
         self.llm = LLMService()
         os.makedirs("data/generated_resumes", exist_ok=True)
 
+    @staticmethod
+    def _extract_identity(context: str) -> str:
+        """Try to pull candidate name/email from the first lines of context."""
+        lines = context.strip().split("\n")
+        identity_lines = []
+        for line in lines[:10]:
+            stripped = line.strip()
+            if "@" in stripped and (".com" in stripped or ".in" in stripped):
+                identity_lines.append(stripped)
+            # First non-empty line that looks like a name (2-4 words, no bullet).
+            elif stripped and not stripped.startswith(("•", "-", "*", "|", "_", "#")):
+                words = stripped.split()
+                if 2 <= len(words) <= 6 and all(w[0].isupper() or w[0].isnumeric() for w in words if w):
+                    identity_lines.append(stripped)
+            if len(identity_lines) >= 2:
+                break
+        return "\n".join(identity_lines) if identity_lines else ""
+
     def _prompt(self, job: Job) -> str:
+        identity = self._extract_identity(job.retrieved_context)
+        identity_block = ""
+        if identity:
+            identity_block = f"""
+CANDIDATE IDENTITY (you MUST use these exact details):
+{identity}
+"""
+
         return f"""
 You are an expert ATS Resume Optimizer.
 
@@ -35,35 +62,34 @@ COMPANY:
 
 JOB DESCRIPTION:
 {job.description}
-
-RELEVANT RESUME CONTEXT:
+{identity_block}
+CANDIDATE'S ACTUAL RESUME (use ONLY this information — never invent):
 {job.retrieved_context}
 
 TASK:
-Create an ATS optimized resume draft.
+Rewrite and optimize the candidate's resume for THIS specific job.
 
-Rules:
-1. Never invent experience.
-2. Never invent projects.
-3. Never invent skills.
-4. Reorder content for relevance.
-5. Highlight the most relevant projects.
-6. Improve ATS keyword coverage.
-7. Keep everything truthful.
-8. Output resume text only.
-9. Never hallucinate candidate details.
-10. Never use placeholders.
-11. Keep the resume concise and professional.
-12. Tailor the resume to the job description.
+CRITICAL RULES:
+1. Use the candidate's REAL name and contact info shown above — NOT a generic placeholder.
+2. Use ONLY projects, experience, skills, and education from the candidate context.
+3. NEVER invent, fabricate, or hallucinate ANY details.
+4. Reorder sections so the most relevant content appears first.
+5. Highlight the 2-3 most relevant projects for this specific job.
+6. Add or emphasize ATS keywords from the job description that already appear in the candidate's real skills.
+7. Keep every quantified achievement truthful (the exact numbers from the context).
+8. Output a complete resume in markdown format.
+9. Do NOT use placeholders like [Your Name] or [Link].
+10. Keep the resume concise (under 400 words).
 """.strip()
 
     def run(self, state: dict) -> dict:
         self.log.info("=== Resume Agent Started ===")
         threshold = state.get("threshold", MATCH_THRESHOLD)
-        qualified = [j for j in self.jobs_from_state(state) if j.score >= threshold]
+        all_qualified = [j for j in self.jobs_from_state(state) if j.score >= threshold]
+        qualified = self.qualified_jobs(state)  # capped at TOP_MATCHES
         self.log.info(
-            "Generating resumes for %d/%d jobs (threshold %.1f)",
-            len(qualified), len(self.jobs_from_state(state)), threshold,
+            "Generating resumes for top %d of %d qualified jobs (threshold %.1f)",
+            len(qualified), len(all_qualified), threshold,
         )
 
         produced = []

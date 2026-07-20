@@ -27,7 +27,7 @@ class ColdEmailAgent(BaseAgent):
         return f"""
 Write a short, specific cold outreach email for a job application.
 
-TO: {job.recruiter_email or "talent@" + job.company.lower().replace(' ', '') + ".com"}
+TO: {job.recruiter_email or "talent@" + job.company.lower().replace(" ", "") + ".com"}
 RECRUITER: {job.recruiter_name or "Hiring Team"}
 COMPANY: {job.company}
 ROLE: {job.title}
@@ -35,7 +35,7 @@ ROLE: {job.title}
 JOB DESCRIPTION:
 {job.description}
 
-CANDIDATE CONTEXT:
+CANDIDATE'S ACTUAL PROFILE (use ONLY this — never invent):
 {job.retrieved_context}
 
 Output format (plain text, no markdown):
@@ -44,13 +44,15 @@ Subject: <a single compelling line>
 
 <body of 3 short paragraphs:
  - 1 line hook referencing the company / role
- - 2 concrete, quantified achievements mapped to the JD
+ - 2 concrete, quantified achievements from the REAL candidate context mapped to the JD
  - a soft ask: quick chat / referral>
 
-Rules:
-1. Never invent achievements not in the candidate context.
-2. Do not include greetings like "Dear Sir/Madam".
-3. Keep under 150 words.
+CRITICAL RULES:
+1. NEVER invent achievements not in the candidate's real context.
+2. NEVER fabricate a candidate name — use the real name from the context.
+3. Do not include greetings like "Dear Sir/Madam".
+4. Keep under 150 words.
+5. Do NOT use placeholders.
 """.strip()
 
     def run(self, state: dict) -> dict:

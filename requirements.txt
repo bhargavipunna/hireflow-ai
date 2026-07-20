@@ -27,6 +27,9 @@ pandas
 scikit-learn
 tqdm
 
-# --- API server (Phase 2) ---
+# --- API server ---
 fastapi
 uvicorn
+
+# --- Scheduler ---
+apscheduler

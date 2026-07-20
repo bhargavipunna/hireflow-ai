@@ -55,13 +55,14 @@ class BaseAgent:
     def qualified_jobs(self, state: dict, threshold: int | None = None, limit: int | None = None) -> list[Job]:
         """Return only jobs at or above the threshold, capped at *limit*.
 
-        Jobs are already sorted by score (descending) by the matcher,
-        so slicing the first *limit* gives the top matches.
+        Jobs are defensively re-sorted by score (descending) so callers
+        always receive the best matches first, regardless of how the
+        state was assembled.
         """
         thr = threshold if threshold is not None else state.get("threshold", MATCH_THRESHOLD)
         cap = limit if limit is not None else state.get("top_matches_limit", TOP_MATCHES)
         jobs = [j for j in self.jobs_from_state(state) if j.score >= thr]
-        # Pre-sorted by matcher; just slice.
+        jobs.sort(key=lambda j: j.score, reverse=True)
         return jobs[:cap]
 
     def write_state_jobs(self, state: dict, key: str, jobs: Iterable[Job]) -> None:

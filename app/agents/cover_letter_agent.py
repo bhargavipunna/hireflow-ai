@@ -30,16 +30,19 @@ LOCATION: {job.location}
 JOB DESCRIPTION:
 {job.description}
 
-RELEVANT CANDIDATE CONTEXT:
+CANDIDATE'S ACTUAL PROFILE (use ONLY this — never invent):
 {job.retrieved_context}
 
 Write a concise, professional cover letter (3 short paragraphs).
-Rules:
-1. Open with a specific, non-generic hook referencing the company.
-2. Map 2-3 concrete achievements from the candidate context to the JD.
-3. Close with a confident, polite call to action.
-4. Never invent experience, projects or skills not present in the context.
-5. Output only the letter body (no addresses, no date).
+
+CRITICAL RULES:
+1. Open with a specific, non-generic hook referencing the company or role.
+2. Map 2-3 REAL achievements from the candidate's context to the JD requirements.
+3. NEVER invent experience, projects, or skills not present in the candidate's context.
+4. NEVER fabricate a candidate name — use the real name from the context.
+5. Close with a confident, polite call to action.
+6. Output only the letter body (no addresses, no date).
+7. Do NOT use placeholders.
 """.strip()
 
     def run(self, state: dict) -> dict:

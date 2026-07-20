@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 
 from app.config.logger import get_logger
-from app.config.settings import MATCH_THRESHOLD, ensure_dirs
+from app.config.settings import MATCH_THRESHOLD, TOP_MATCHES, ensure_dirs
 from app.graph.workflow import workflow
 
 log = get_logger(__name__)
@@ -44,6 +44,7 @@ def main() -> int:
         "jobs": [],
         "matched_jobs": [],
         "threshold": float(MATCH_THRESHOLD),
+        "top_matches_limit": int(TOP_MATCHES),
     }
 
     try:
