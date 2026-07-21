@@ -48,11 +48,12 @@ class ATSScorerAgent(BaseAgent):
             if len(t) > 2 and t.lower() not in STOPWORDS
         }
 
-    def keyword_score(self, resume_text: str, jd_text: str) -> float:
-        jd_tokens = self._tokens(jd_text)
+    @staticmethod
+    def keyword_score(resume_text: str, jd_text: str) -> float:
+        jd_tokens = ATSScorerAgent._tokens(jd_text)
         if not jd_tokens:
             return 0.0
-        resume_tokens = self._tokens(resume_text)
+        resume_tokens = ATSScorerAgent._tokens(resume_text)
         overlap = jd_tokens & resume_tokens
         return round(100.0 * len(overlap) / len(jd_tokens), 2)
 

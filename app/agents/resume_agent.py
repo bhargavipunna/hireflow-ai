@@ -22,28 +22,82 @@ class ResumeAgent(BaseAgent):
     def __init__(self):
         super().__init__()
         self.llm = LLMService()
+        # Lazy-loaded: some tests construct ResumeAgent without ChromaDB.
+        self._retriever = None
+        self._identity_cache: str | None = None
         os.makedirs("data/generated_resumes", exist_ok=True)
+
+    @property
+    def retriever(self):
+        if self._retriever is None:
+            from app.rag.retriever import Retriever
+            self._retriever = Retriever()
+        return self._retriever
+
+    def _fetch_identity(self) -> str:
+        """Deterministically retrieve the candidate's name/contact line.
+
+        Semantic retrieval is query-dependent — a skills-focused JD may
+        not surface the resume header chunk. So we issue a dedicated
+        query that reliably ranks the header first, then cache the
+        result for the whole run.
+        """
+        if self._identity_cache is not None:
+            return self._identity_cache
+        try:
+            chunks = self.retriever.retrieve(
+                "candidate name email phone contact linkedin github address"
+            )
+            context = "\n".join(chunks)
+            self._identity_cache = self._extract_identity(context)
+        except Exception as exc:
+            self.log.warning("Identity retrieval failed: %s", exc)
+            self._identity_cache = ""
+        return self._identity_cache
 
     @staticmethod
     def _extract_identity(context: str) -> str:
-        """Try to pull candidate name/email from the first lines of context."""
-        lines = context.strip().split("\n")
-        identity_lines = []
-        for line in lines[:10]:
-            stripped = line.strip()
-            if "@" in stripped and (".com" in stripped or ".in" in stripped):
-                identity_lines.append(stripped)
-            # First non-empty line that looks like a name (2-4 words, no bullet).
-            elif stripped and not stripped.startswith(("•", "-", "*", "|", "_", "#")):
-                words = stripped.split()
-                if 2 <= len(words) <= 6 and all(w[0].isupper() or w[0].isnumeric() for w in words if w):
-                    identity_lines.append(stripped)
-            if len(identity_lines) >= 2:
+        """Pull candidate name + contact line from anywhere in the context.
+
+        Strategy: find the contact line (contains @ and .com/.in), then
+        treat the immediately preceding short line as the candidate name.
+        This is more reliable than pattern-matching names, which produces
+        false positives on lines like job titles.
+        """
+        lines = [l.strip() for l in context.split("\n") if l.strip()]
+
+        email_idx = -1
+        for i, line in enumerate(lines):
+            if "@" in line and (".com" in line or ".in" in line):
+                email_idx = i
                 break
-        return "\n".join(identity_lines) if identity_lines else ""
+        if email_idx == -1:
+            return ""
+
+        email_line = lines[email_idx]
+        # Walk backwards from the contact line to find a plausible name.
+        name_line = ""
+        for j in range(email_idx - 1, max(-1, email_idx - 4), -1):
+            candidate = lines[j]
+            words = candidate.split()
+            if (
+                2 <= len(words) <= 4
+                and not candidate.startswith(("•", "-", "*", "|", "_", "#", "(", "htt"))
+                and "@" not in candidate
+                and not any(ch.isdigit() for ch in candidate)
+            ):
+                name_line = candidate
+                break
+
+        parts = [p for p in (name_line, email_line) if p]
+        return "\n".join(parts)
 
     def _prompt(self, job: Job) -> str:
+        # Try the job's retrieved context first; fall back to a dedicated
+        # identity query so we always know the real candidate.
         identity = self._extract_identity(job.retrieved_context)
+        if not identity:
+            identity = self._fetch_identity()
         identity_block = ""
         if identity:
             identity_block = f"""
