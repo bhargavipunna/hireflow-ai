@@ -88,7 +88,16 @@ cp .env.example .env
 ```
 
 ### Place your resume
-Put your resume PDF at `data/resume/resume.pdf`.
+Preferred: put your master LaTeX resume at `data/resume/resume.tex`.
+The system will use that source as the template and write tailored
+duplicates as `.tex` files under `data/generated_resumes/`.
+
+Fallback: put your resume PDF at `data/resume/resume.pdf`.
+
+You can also point at a direct `.tex` URL with `MASTER_RESUME_TEX_URL`
+in `.env`; the file is downloaded into `data/resume/` before the run.
+An Overleaf project page URL is not a direct `.tex` file, so export the
+source into `data/resume/resume.tex` unless you have Overleaf Git access.
 
 ### Run the full pipeline
 ```bash
@@ -146,6 +155,8 @@ All settings are env-driven (see `.env.example`). Highlights:
 | Var | Default | Purpose |
 |-----|---------|---------|
 | `OLLAMA_MODEL` | `qwen3:8b` | LLM model tag. |
+| `MASTER_RESUME_TEX_PATH` | `data/resume/resume.tex` | Preferred local LaTeX resume template. |
+| `MASTER_RESUME_TEX_URL` | *(empty)* | Optional direct `.tex` URL to download before a run. |
 | `MATCH_THRESHOLD` | `65` | Min score (0-100) for artifact generation. |
 | `TOP_MATCHES` | `10` | Max jobs that get resumes/cover-letters/emails. |
 | `TOP_K` | `5` | Resume chunks retrieved per job. |

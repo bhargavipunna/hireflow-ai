@@ -18,6 +18,19 @@ class VectorDB:
             name=COLLECTION_NAME
         )
 
+    def clear(self):
+
+        try:
+            self.client.delete_collection(
+                name=COLLECTION_NAME
+            )
+        except Exception:
+            pass
+
+        self.collection = self.client.get_or_create_collection(
+            name=COLLECTION_NAME
+        )
+
     def add_document(
         self,
         doc_id,

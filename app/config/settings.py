@@ -37,7 +37,13 @@ COVER_LETTER_DIR = DATA_DIR / "cover_letters"
 EMAIL_DIR = DATA_DIR / "emails"
 SOURCES_DIR = BASE_DIR / "config" / "sources"
 
+RESUME_DIR = DATA_DIR / "resume"
 RESUME_PATH = DATA_DIR / "resume" / "resume.pdf"
+MASTER_RESUME_TEX_PATH = Path(
+    os.getenv("MASTER_RESUME_TEX_PATH", str(RESUME_DIR / "resume.tex"))
+)
+MASTER_RESUME_TEX_URL = os.getenv("MASTER_RESUME_TEX_URL", "").strip()
+RESUME_PROFILE_META_PATH = RESUME_DIR / "profile_source.json"
 JOBS_DIR = DATA_DIR / "jobs"
 RAW_JOBS_PATH = JOBS_DIR / "raw_jobs.json"
 MATCHED_JOBS_PATH = JOBS_DIR / "matched_jobs.json"
@@ -81,6 +87,7 @@ def ensure_dirs() -> None:
         COVER_LETTER_DIR,
         EMAIL_DIR,
         JOBS_DIR,
+        RESUME_DIR,
         SOURCES_DIR,
     ):
         Path(path).mkdir(parents=True, exist_ok=True)

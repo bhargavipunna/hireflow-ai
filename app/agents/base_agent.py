@@ -81,9 +81,11 @@ class BaseAgent:
         doc_type: str,
         job_ref: str,
         note: str = "",
+        extension: str = "txt",
     ) -> GeneratedDocument:
         directory.mkdir(parents=True, exist_ok=True)
-        path = directory / f"{filename_stem}.txt"
+        clean_extension = extension.lstrip(".") or "txt"
+        path = directory / f"{filename_stem}.{clean_extension}"
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
         doc = GeneratedDocument(
@@ -96,9 +98,16 @@ class BaseAgent:
         self.log.info("Wrote %s -> %s", doc_type, path)
         return doc
 
-    def write_resume(self, stem: str, content: str, job_ref: str) -> GeneratedDocument:
+    def write_resume(
+        self,
+        stem: str,
+        content: str,
+        job_ref: str,
+        extension: str = "txt",
+        note: str = "",
+    ) -> GeneratedDocument:
         return self.write_artifact(
-            GENERATED_RESUME_DIR, stem, content, "resume", job_ref
+            GENERATED_RESUME_DIR, stem, content, "resume", job_ref, note, extension
         )
 
     def write_cover_letter(self, stem: str, content: str, job_ref: str) -> GeneratedDocument:

@@ -39,6 +39,18 @@ New York, NY|+1-555-0100|mary@example.com |LinkedIn
     assert "mary@example.com" in identity
 
 
+def test_clean_latex_output_removes_markdown_fence():
+    raw = """```tex
+\\documentclass{article}
+\\begin{document}
+Hello
+\\end{document}
+```"""
+    cleaned = ResumeAgent._clean_latex_output(raw)
+    assert cleaned.startswith("\\documentclass")
+    assert "```" not in cleaned
+
+
 # --- BaseAgent qualified_jobs -----------------------------------------------
 
 class _AgentUnderTest(BaseAgent):

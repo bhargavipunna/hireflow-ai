@@ -14,6 +14,7 @@ from app.agents.base_agent import BaseAgent
 from app.config.settings import MATCH_THRESHOLD
 from app.models.job import Job
 from app.services.llm_service import LLMService
+from app.services.resume_source_service import ResumeSourceService
 
 
 class ResumeAgent(BaseAgent):
@@ -22,6 +23,7 @@ class ResumeAgent(BaseAgent):
     def __init__(self):
         super().__init__()
         self.llm = LLMService()
+        self.resume_source = ResumeSourceService()
         # Lazy-loaded: some tests construct ResumeAgent without ChromaDB.
         self._retriever = None
         self._identity_cache: str | None = None
@@ -136,6 +138,59 @@ CRITICAL RULES:
 10. Keep the resume concise (under 400 words).
 """.strip()
 
+    def _latex_prompt(self, job: Job, template: str) -> str:
+        identity = self._extract_identity(job.retrieved_context)
+        if not identity:
+            identity = self._fetch_identity()
+        identity_block = ""
+        if identity:
+            identity_block = f"""
+CANDIDATE IDENTITY (you MUST preserve these exact details):
+{identity}
+"""
+
+        return f"""
+You are an expert ATS resume editor and LaTeX resume maintainer.
+
+JOB TITLE:
+{job.title}
+
+COMPANY:
+{job.company}
+
+JOB DESCRIPTION:
+{job.description}
+{identity_block}
+CANDIDATE FACTS RETRIEVED FROM THE REAL RESUME:
+{job.retrieved_context}
+
+MASTER LATEX RESUME SOURCE:
+```tex
+{template}
+```
+
+TASK:
+Create a tailored duplicate of the master LaTeX resume for this job.
+
+CRITICAL RULES:
+1. Return ONLY complete LaTeX source code. No markdown fences, no commentary.
+2. Preserve the original candidate identity and contact details.
+3. Preserve the LaTeX document structure and commands unless a small edit is needed.
+4. Use ONLY facts, projects, skills, education, and achievements present in the candidate facts or master source.
+5. Do NOT invent companies, metrics, titles, dates, links, skills, or experience.
+6. Reorder and rewrite bullets to emphasize the strongest truthful match to this job.
+7. Add ATS keywords only when they truthfully match the candidate's existing skills.
+8. Keep the resume concise and one-resume focused.
+""".strip()
+
+    @staticmethod
+    def _clean_latex_output(content: str) -> str:
+        cleaned = content.strip()
+        fence = re.match(r"^```(?:tex|latex)?\s*(.*?)\s*```$", cleaned, re.DOTALL)
+        if fence:
+            cleaned = fence.group(1).strip()
+        return cleaned
+
     def run(self, state: dict) -> dict:
         self.log.info("=== Resume Agent Started ===")
         threshold = state.get("threshold", MATCH_THRESHOLD)
@@ -150,13 +205,22 @@ CRITICAL RULES:
         for job in qualified:
             self.log.info("Generating resume for %s @ %s", job.title, job.company)
             try:
-                result = self.llm.generate(self._prompt(job))
+                template = self.resume_source.latex_template()
+                if template:
+                    result = self.llm.generate(self._latex_prompt(job, template))
+                    result = self._clean_latex_output(result)
+                    extension = "tex"
+                    note = "tailored from master LaTeX resume"
+                else:
+                    result = self.llm.generate(self._prompt(job))
+                    extension = "txt"
+                    note = ""
             except Exception as exc:
                 self.log.error("LLM failed for %s: %s", job.id, exc)
                 continue
 
             stem = self._safe_name(job.company, job.title)
-            doc = self.write_resume(stem, result, job.id)
+            doc = self.write_resume(stem, result, job.id, extension=extension, note=note)
             produced.append(doc.to_dict())
 
             # Update the matched repo so later agents see the resume path.

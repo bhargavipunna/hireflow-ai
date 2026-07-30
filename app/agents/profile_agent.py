@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from app.agents.base_agent import BaseAgent
 from app.config.exceptions import ConfigError
-from app.config.settings import RESUME_PATH
+from app.services.resume_source_service import ResumeSourceService
 
 
 class ProfileAgent(BaseAgent):
@@ -21,15 +21,20 @@ class ProfileAgent(BaseAgent):
         from app.rag.ingest import ResumeIngestor
 
         self.ingestor = ResumeIngestor()
+        self.resume_source = ResumeSourceService()
 
     def run(self, state: dict) -> dict:
-        self.log.info("Loading resume from %s", RESUME_PATH)
-        if not RESUME_PATH.exists():
-            raise ConfigError(f"Resume not found at {RESUME_PATH}")
+        try:
+            source = self.resume_source.resolve()
+        except FileNotFoundError as exc:
+            raise ConfigError(str(exc)) from exc
 
-        text = self.ingestor.load_resume(str(RESUME_PATH))
-        self.ingestor.ingest(str(RESUME_PATH))
+        self.log.info("Loading %s resume from %s", source.kind, source.path)
+        text = self.ingestor.load_resume(source.path)
+        self.ingestor.ingest(source.path)
 
         state["resume_text"] = text
+        state["resume_source_kind"] = source.kind
+        state["resume_source_path"] = str(source.path)
         self.log.info("Profile ready (%d chars)", len(text))
         return state
