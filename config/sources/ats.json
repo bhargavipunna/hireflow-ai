@@ -1,0 +1,51 @@
+{
+  "name": "Public ATS Feeds",
+  "enabled": true,
+  "boards": [
+    {
+      "provider": "greenhouse",
+      "company": "Airbnb",
+      "token": "airbnb"
+    },
+    {
+      "provider": "greenhouse",
+      "company": "Databricks",
+      "token": "databricks"
+    },
+    {
+      "provider": "lever",
+      "company": "Netflix",
+      "token": "netflix"
+    },
+    {
+      "provider": "ashby",
+      "company": "Anthropic",
+      "token": "anthropic"
+    },
+    {
+      "provider": "smartrecruiters",
+      "company": "Visa",
+      "token": "Visa"
+    }
+  ],
+  "fallback_jobs": [
+    {
+      "title": "Software Engineer, Early Career",
+      "company": "Public ATS Sample",
+      "location": "Hyderabad / Remote",
+      "description": "Python, APIs, data structures, SQL, cloud deployment, and production software engineering. Build reliable backend services and internal tools.",
+      "apply_link": "https://boards.greenhouse.io/sample/jobs/sample-early-career",
+      "job_type": "Full Time",
+      "posted_date": "Today"
+    },
+    {
+      "title": "Machine Learning Engineer Intern",
+      "company": "Public ATS Sample",
+      "location": "Remote",
+      "description": "Python, PyTorch, model evaluation, data preprocessing, retrieval augmented generation, and experimentation for applied AI products.",
+      "apply_link": "https://jobs.lever.co/sample/sample-ml-intern",
+      "job_type": "Internship",
+      "posted_date": "Today"
+    }
+  ]
+}

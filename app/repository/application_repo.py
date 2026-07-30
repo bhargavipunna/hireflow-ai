@@ -65,8 +65,25 @@ class ApplicationRepository(BaseRepository[Application]):
     def by_status(self, status: str) -> list[Application]:
         return self.filter(lambda a: a.status == status)
 
+    def review_queue(self) -> list[Application]:
+        return sorted(
+            self.by_status("ready_for_review"),
+            key=lambda a: a.score,
+            reverse=True,
+        )
+
+    def set_status(self, job_id: str, status: str, notes: str = "") -> Application | None:
+        def mutate(app: Application) -> Application:
+            app.advance_to(status)
+            if notes:
+                app.notes = notes
+            app.touch()
+            return app
+
+        return self.update(job_id, mutate)
+
     def summary(self) -> dict[str, int]:
-        out = {s: 0 for s in STATUS_PIPELINE}
+        out = {s: 0 for s in [*STATUS_PIPELINE, "rejected"]}
         for app in self.all():
             out[app.status] = out.get(app.status, 0) + 1
         return out

@@ -113,6 +113,14 @@ This will:
 6. Update the application tracker.
 7. Write a markdown report to `data/reports/report_YYYY-MM-DD.md`.
 
+After a run, inspect applications that are ready for your approval:
+
+```bash
+python -m app.cli.main review
+python -m app.cli.main approve <job_id> --notes "Looks good"
+python -m app.cli.main reject <job_id> --notes "Not relevant"
+```
+
 ---
 
 ## CLI commands
@@ -122,6 +130,9 @@ This will:
 | `python -m app.cli.main run` | Full pipeline (scrape → match → generate → report). |
 | `python -m app.cli.main scrape --sources wellfound,remote` | Scrape only (optional source filter). |
 | `python -m app.cli.main stats` | Show repository counts and top matches. |
+| `python -m app.cli.main review` | Show applications waiting for approval. |
+| `python -m app.cli.main approve <job_id>` | Approve an application for a future apply step. |
+| `python -m app.cli.main reject <job_id>` | Reject an application so automation skips it. |
 | `python -m app.cli.main report` | Re-generate today's daily report from current state. |
 | `python -m app.cli.main serve --port 8000` | Start the FastAPI server. |
 | `python -m app.cli.main schedule --hour 9` | Start the daily scheduler daemon (runs pipeline at 09:00 UTC). |
@@ -139,6 +150,9 @@ Start the server with `python -m app.cli.main serve`, then:
 | `/jobs/matched?limit=N` | GET | Top matched jobs (default 50). |
 | `/jobs/{job_id}` | GET | Single matched job by ID. |
 | `/applications?status=X` | GET | Tracked applications, optionally filtered. |
+| `/applications/review` | GET | Applications waiting for approval. |
+| `/applications/{job_id}/approve` | POST | Approve a reviewed application. |
+| `/applications/{job_id}/reject` | POST | Reject an application. |
 | `/documents?doc_type=X` | GET | Generated artifacts, optionally filtered. |
 | `/report/today` | GET | Today's daily report content. |
 | `/actions/run` | POST | Trigger a full pipeline run (synchronous). |
@@ -168,10 +182,11 @@ All settings are env-driven (see `.env.example`). Highlights:
 
 ### Scrapers are config-driven
 
-Each source lives at `config/sources/<name>.json` with `endpoints`,
-CSS `selectors`, and `fallback_jobs`. Edit or add a file to point at
-new boards — no code change required. New sources get the generic
-`CompanyScraper` automatically.
+Each source lives at `config/sources/<name>.json` with endpoints and
+fallback jobs. The `ats` source supports public Greenhouse, Lever, Ashby,
+and SmartRecruiters feeds through `boards` entries, which is usually more
+reliable than scraping login-heavy aggregators. Edit `config/sources/ats.json`
+to add companies that publish public ATS feeds.
 
 ---
 
@@ -195,6 +210,8 @@ python -m pytest tests/ -v
   Treat these as guesses pending verification.
 - Scrapers use a single shared session, retry with backoff, and fall
   back to sample data rather than hammering blocked endpoints.
+- Applications stop at `ready_for_review` until you explicitly approve
+  or reject them. There is still no final-submit automation in this phase.
 
 ---
 
@@ -223,7 +240,7 @@ Version: v0.3 — Phase 1 + Phase 2 complete.
 
 ### Future enhancements
 - Real auto-apply via Playwright (behind explicit opt-in)
-- Deeper per-site live scraping (beyond JSON-LD + BS4 fallback)
+- More company-specific ATS feeds and direct company career pages
 - Optional SMTP email sending (behind `SEND_EMAILS=true`)
 - Web dashboard frontend (React / Streamlit)
 - Multi-user / multi-resume support

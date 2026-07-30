@@ -9,12 +9,14 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from typing import Iterable
 
 from app.config.logger import get_logger
 from app.config.settings import SCRAPER_CONCURRENCY, SCRAPER_ENABLED_SOURCES
 from app.models.job import Job
 from app.repository.job_repo import JobRepository
+from app.scrapers.ats_scraper import ATSScraper
 from app.scrapers.company_scraper import CompanyScraper
 from app.scrapers.internshala_scraper import InternshalaScraper
 from app.scrapers.mnc_scraper import MNCScraper
@@ -33,6 +35,7 @@ SCRAPER_REGISTRY = {
     "mnc": MNCScraper,
     "startup": StartupScraper,
     "remote": RemoteScraper,
+    "ats": ATSScraper,
     "company": CompanyScraper,
 }
 
@@ -44,7 +47,7 @@ class ScraperManager:
 
     def _init_scrapers(self):
         """Instantiate scrapers for enabled sources only."""
-        enabled = SCRAPER_ENABLED_SOURCES  # None => all
+        enabled = self._enabled_sources()
         scrapers = []
         for stem, cls in SCRAPER_REGISTRY.items():
             if enabled and stem not in enabled:
@@ -55,6 +58,13 @@ class ScraperManager:
             except Exception as exc:
                 log.error("Failed to init scraper %s: %s", stem, exc)
         return scrapers
+
+    @staticmethod
+    def _enabled_sources() -> list[str] | None:
+        raw = os.getenv("SCRAPER_ENABLED_SOURCES", "")
+        if raw.strip():
+            return [s.strip() for s in raw.split(",") if s.strip()]
+        return SCRAPER_ENABLED_SOURCES
 
     def collect_jobs(self) -> list[Job]:
         """Run all scrapers concurrently and return deduped jobs."""

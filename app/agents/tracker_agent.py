@@ -34,7 +34,7 @@ class TrackerAgent(BaseAgent):
 
             # Determine the furthest status reached.
             if email is not None:
-                status = "email_drafted"
+                status = "ready_for_review"
             elif cover is not None:
                 status = "cover_letter_generated"
             elif resume is not None:

@@ -63,6 +63,22 @@ def test_applications_filter(client):
         assert app["status"] == "matched"
 
 
+def test_review_queue_endpoint(client):
+    r = client.get("/applications/review")
+    assert r.status_code == 200
+    assert isinstance(r.json(), list)
+
+
+def test_approve_missing_application_404(client):
+    r = client.post("/applications/does_not_exist/approve", json={"notes": "ok"})
+    assert r.status_code == 404
+
+
+def test_reject_missing_application_404(client):
+    r = client.post("/applications/does_not_exist/reject", json={"notes": "no"})
+    assert r.status_code == 404
+
+
 def test_documents_endpoint(client):
     r = client.get("/documents")
     assert r.status_code == 200

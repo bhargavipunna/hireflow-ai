@@ -11,6 +11,7 @@ from unittest.mock import patch
 import pytest
 
 from app.scrapers.scraper_manager import ScraperManager
+from app.scrapers.ats_scraper import ATSScraper
 from app.scrapers.source_config import load_source
 
 
@@ -31,7 +32,7 @@ def test_all_sources_have_required_fields():
     from app.scrapers.source_config import load_all_sources
 
     sources = load_all_sources()
-    assert len(sources) >= 7  # wellfound, internshala, unstop, mnc, startup, remote, company
+    assert len(sources) >= 8
     for stem, cfg in sources.items():
         assert "name" in cfg, f"{stem} missing 'name'"
         assert "enabled" in cfg, f"{stem} missing 'enabled'"
@@ -51,3 +52,48 @@ def test_scraper_manager_dedupe_logic():
     ]
     deduped = ScraperManager._dedupe(jobs)
     assert len(deduped) == 2
+
+
+def test_scraper_manager_reads_runtime_source_filter(monkeypatch):
+    monkeypatch.setenv("SCRAPER_ENABLED_SOURCES", "ats")
+    mgr = ScraperManager()
+    assert [s.source for s in mgr.scrapers] == ["ats"]
+
+
+def test_ats_scraper_parses_greenhouse_payload():
+    scraper = ATSScraper()
+    jobs = scraper._parse_greenhouse(
+        {
+            "jobs": [
+                {
+                    "title": "Backend Engineer",
+                    "location": {"name": "Remote"},
+                    "content": "<p>Python and APIs</p>",
+                    "absolute_url": "https://boards.greenhouse.io/acme/jobs/1",
+                    "updated_at": "2026-01-01",
+                }
+            ]
+        },
+        "Acme",
+    )
+    assert jobs[0]["title"] == "Backend Engineer"
+    assert jobs[0]["company"] == "Acme"
+    assert jobs[0]["description"] == "Python and APIs"
+
+
+def test_ats_scraper_parses_lever_payload():
+    scraper = ATSScraper()
+    jobs = scraper._parse_lever(
+        [
+            {
+                "text": "ML Intern",
+                "categories": {"location": "Bangalore", "commitment": "Internship"},
+                "lists": [{"content": "<li>PyTorch experiments</li>"}],
+                "hostedUrl": "https://jobs.lever.co/acme/1",
+            }
+        ],
+        "Acme",
+    )
+    assert jobs[0]["title"] == "ML Intern"
+    assert jobs[0]["job_type"] == "Internship"
+    assert "PyTorch" in jobs[0]["description"]

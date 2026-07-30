@@ -1,7 +1,7 @@
 """Application model used by the application tracker.
 
 Represents the lifecycle of one job through the pipeline:
-discovered -> matched -> resume_generated -> applied_draft -> reported
+discovered -> matched -> generated artifacts -> human review -> later apply
 """
 
 from __future__ import annotations
@@ -19,9 +19,14 @@ STATUS_PIPELINE = [
     "resume_generated",
     "cover_letter_generated",
     "email_drafted",
+    "ready_for_review",
+    "approved",
     "applied_draft",
+    "submitted",
     "reported",
 ]
+
+TERMINAL_STATUSES = {"rejected"}
 
 
 @dataclass
@@ -46,7 +51,13 @@ class Application:
 
     def advance_to(self, status: str) -> None:
         """Set status if it is later in the pipeline than the current one."""
+        if status in TERMINAL_STATUSES:
+            self.status = status
+            self.touch()
+            return
         if status not in STATUS_PIPELINE:
+            return
+        if self.status in TERMINAL_STATUSES:
             return
         current_idx = (
             STATUS_PIPELINE.index(self.status)

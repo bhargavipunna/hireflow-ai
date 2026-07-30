@@ -4,6 +4,9 @@ Subcommands:
   run       Execute the full pipeline (scrape + match + generate + report).
   scrape    Only run the scrapers and persist raw jobs.
   stats     Show tracker / repository counts.
+  review    Show applications waiting for approval.
+  approve   Mark an application approved for a future apply step.
+  reject    Mark an application rejected so automation skips it.
   report    Re-generate today's daily report from current repository state.
   serve     Start the FastAPI server (Phase 2).
   schedule  Start the daily scheduler daemon (Phase 2).
@@ -154,6 +157,50 @@ def cmd_stats(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_review(args: argparse.Namespace) -> int:
+    """Show applications waiting for human approval."""
+    ensure_dirs()
+    from app.repository.application_repo import ApplicationRepository
+
+    ar = ApplicationRepository()
+    rows = [a.to_dict() for a in ar.review_queue()[: args.limit]]
+    print("\n=== Review Queue ===\n")
+    _print_table(
+        rows,
+        [
+            ("job_id", "Job ID"),
+            ("title", "Title"),
+            ("company", "Company"),
+            ("score", "Score"),
+            ("apply_link", "Apply Link"),
+        ],
+    )
+    return 0
+
+
+def _set_application_status(args: argparse.Namespace, status: str) -> int:
+    ensure_dirs()
+    from app.repository.application_repo import ApplicationRepository
+
+    ar = ApplicationRepository()
+    app_record = ar.set_status(args.job_id, status, notes=args.notes or "")
+    if app_record is None:
+        print(f"Application not found: {args.job_id}")
+        return 1
+    print(f"{args.job_id} -> {app_record.status}")
+    return 0
+
+
+def cmd_approve(args: argparse.Namespace) -> int:
+    """Approve an application for the future apply step."""
+    return _set_application_status(args, "approved")
+
+
+def cmd_reject(args: argparse.Namespace) -> int:
+    """Reject an application so later automation skips it."""
+    return _set_application_status(args, "rejected")
+
+
 def cmd_report(args: argparse.Namespace) -> int:
     """Re-generate today's daily report from current repo state."""
     ensure_dirs()
@@ -216,6 +263,22 @@ def build_parser() -> argparse.ArgumentParser:
     # stats
     p_stats = sub.add_parser("stats", help="Show repository / tracker stats.")
     p_stats.set_defaults(func=cmd_stats)
+
+    # review
+    p_review = sub.add_parser("review", help="Show applications waiting for approval.")
+    p_review.add_argument("--limit", type=int, default=20)
+    p_review.set_defaults(func=cmd_review)
+
+    # approve / reject
+    p_approve = sub.add_parser("approve", help="Approve an application by job id.")
+    p_approve.add_argument("job_id")
+    p_approve.add_argument("--notes", default="")
+    p_approve.set_defaults(func=cmd_approve)
+
+    p_reject = sub.add_parser("reject", help="Reject an application by job id.")
+    p_reject.add_argument("job_id")
+    p_reject.add_argument("--notes", default="")
+    p_reject.set_defaults(func=cmd_reject)
 
     # report
     p_report = sub.add_parser("report", help="Regenerate today's daily report.")

@@ -1,6 +1,7 @@
 """Scrapers package: per-source job collectors and the orchestrating manager."""
 
 from app.scrapers.base_scraper import BaseScraper
+from app.scrapers.ats_scraper import ATSScraper
 from app.scrapers.company_scraper import CompanyScraper
 from app.scrapers.internshala_scraper import InternshalaScraper
 from app.scrapers.mnc_scraper import MNCScraper
@@ -13,6 +14,7 @@ from app.scrapers.wellfound_scraper import WellfoundScraper
 
 __all__ = [
     "BaseScraper",
+    "ATSScraper",
     "CompanyScraper",
     "InternshalaScraper",
     "MNCScraper",

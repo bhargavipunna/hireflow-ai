@@ -44,6 +44,23 @@ def test_parser_stats():
     assert args.command == "stats"
 
 
+def test_parser_review():
+    parser = build_parser()
+    args = parser.parse_args(["review", "--limit", "5"])
+    assert args.command == "review"
+    assert args.limit == 5
+
+
+def test_parser_approve_reject():
+    parser = build_parser()
+    approve = parser.parse_args(["approve", "job123", "--notes", "ok"])
+    reject = parser.parse_args(["reject", "job123"])
+    assert approve.command == "approve"
+    assert approve.job_id == "job123"
+    assert approve.notes == "ok"
+    assert reject.command == "reject"
+
+
 def test_parser_missing_subcommand():
     parser = build_parser()
     with pytest.raises(SystemExit):

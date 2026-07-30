@@ -110,6 +110,29 @@ def test_app_repo_summary(app_repo):
     s = app_repo.summary()
     assert s["matched"] == 2
     assert s["resume_generated"] == 1
+    assert "ready_for_review" in s
+    assert "rejected" in s
+
+
+def test_app_repo_review_queue_and_approval(app_repo):
+    app_repo.upsert(Application(job_id="a", company="c", title="t", status="ready_for_review", score=70))
+    app_repo.upsert(Application(job_id="b", company="c", title="t", status="ready_for_review", score=90))
+    queue = app_repo.review_queue()
+    assert [a.job_id for a in queue] == ["b", "a"]
+
+    approved = app_repo.set_status("b", "approved", notes="looks good")
+    assert approved is not None
+    assert approved.status == "approved"
+    assert approved.notes == "looks good"
+
+
+def test_app_repo_reject_is_terminal(app_repo):
+    app_repo.upsert(Application(job_id="a", company="c", title="t", status="ready_for_review"))
+    rejected = app_repo.set_status("a", "rejected")
+    assert rejected is not None
+    assert rejected.status == "rejected"
+    app_repo.upsert(Application(job_id="a", company="c", title="t", status="approved"))
+    assert app_repo.get("a").status == "rejected"
 
 
 # --- GeneratedDocumentRepository --------------------------------------------

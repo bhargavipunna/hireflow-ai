@@ -53,6 +53,10 @@ class RunResponse(BaseModel):
     report_path: Optional[str] = None
 
 
+class ReviewActionRequest(BaseModel):
+    notes: str = ""
+
+
 # --- endpoints --------------------------------------------------------------
 
 
@@ -104,6 +108,33 @@ def list_applications(status: Optional[str] = None):
     ar = ApplicationRepository()
     apps = ar.by_status(status) if status else ar.all()
     return [a.to_dict() for a in apps]
+
+
+@app.get("/applications/review")
+def review_queue():
+    """List applications waiting for human approval."""
+    ar = ApplicationRepository()
+    return [a.to_dict() for a in ar.review_queue()]
+
+
+@app.post("/applications/{job_id}/approve")
+def approve_application(job_id: str, payload: ReviewActionRequest | None = None):
+    """Mark a reviewed application as approved for a future apply step."""
+    ar = ApplicationRepository()
+    app_record = ar.set_status(job_id, "approved", notes=payload.notes if payload else "")
+    if app_record is None:
+        raise HTTPException(status_code=404, detail=f"Application {job_id} not found")
+    return app_record.to_dict()
+
+
+@app.post("/applications/{job_id}/reject")
+def reject_application(job_id: str, payload: ReviewActionRequest | None = None):
+    """Reject an application so later automation skips it."""
+    ar = ApplicationRepository()
+    app_record = ar.set_status(job_id, "rejected", notes=payload.notes if payload else "")
+    if app_record is None:
+        raise HTTPException(status_code=404, detail=f"Application {job_id} not found")
+    return app_record.to_dict()
 
 
 @app.get("/documents")
