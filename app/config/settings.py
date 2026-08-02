@@ -55,7 +55,22 @@ COLLECTION_NAME = os.getenv("COLLECTION_NAME", "user_profile")
 TOP_K = _env_int("TOP_K", 5)
 
 # --- LLM / Embeddings ------------------------------------------------------
+LLM_PROVIDER_ORDER = [
+    s.strip().lower()
+    for s in os.getenv("LLM_PROVIDER_ORDER", "ollama").split(",")
+    if s.strip()
+]
+LLM_RETRIES = _env_int("LLM_RETRIES", 2)
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3:8b")
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "").strip()
+NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.1-8b-instruct")
+NVIDIA_BASE_URL = os.getenv(
+    "NVIDIA_BASE_URL",
+    "https://integrate.api.nvidia.com/v1",
+).rstrip("/")
+SARVAM_API_KEY = os.getenv("SARVAM_API_KEY", "").strip()
+SARVAM_MODEL = os.getenv("SARVAM_MODEL", "sarvam-105b")
+SARVAM_BASE_URL = os.getenv("SARVAM_BASE_URL", "https://api.sarvam.ai/v1").rstrip("/")
 
 # --- Matching --------------------------------------------------------------
 MATCH_THRESHOLD = _env_int("MATCH_THRESHOLD", 65)

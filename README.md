@@ -32,7 +32,7 @@ Profile ──▶ Scraper ──▶ Matcher ──▶ Resume ──▶ CoverLett
 | Layer | Responsibility |
 |-------|----------------|
 | `app/agents/` | 10 pipeline nodes: Profile, Scraper, Matcher, Resume, CoverLetter, ATSScorer, Recruiter, ColdEmail, Tracker, DailyReport. |
-| `app/services/` | Stateless services: `LLMService` (Ollama), `EmbeddingService` (BGE), `ScoreService` (cosine). |
+| `app/services/` | Stateless services: `LLMService` (Ollama with optional NVIDIA/Sarvam fallback), `EmbeddingService` (BGE), `ScoreService` (cosine). |
 | `app/repository/` | JSON-file-backed persistence with atomic writes: jobs, matched jobs, applications, generated-doc index. |
 | `app/scrapers/` | `BaseScraper` + 7 per-source adapters, driven by `config/sources/*.json`. `ScraperManager` runs them concurrently. |
 | `app/rag/` | PDF ingest → chunk → embed → ChromaDB; semantic retriever. |
@@ -168,7 +168,13 @@ All settings are env-driven (see `.env.example`). Highlights:
 
 | Var | Default | Purpose |
 |-----|---------|---------|
+| `LLM_PROVIDER_ORDER` | `ollama` | Comma-separated generation fallback order, e.g. `ollama,nvidia,sarvam`. |
+| `LLM_RETRIES` | `2` | Attempts per LLM provider before trying the next provider. |
 | `OLLAMA_MODEL` | `qwen3:8b` | LLM model tag. |
+| `NVIDIA_API_KEY` | *(empty)* | Optional NVIDIA NIM API key from build.nvidia.com. |
+| `NVIDIA_MODEL` | `meta/llama-3.1-8b-instruct` | NVIDIA fallback model. |
+| `SARVAM_API_KEY` | *(empty)* | Optional Sarvam API key. |
+| `SARVAM_MODEL` | `sarvam-105b` | Sarvam fallback model. |
 | `MASTER_RESUME_TEX_PATH` | `data/resume/resume.tex` | Preferred local LaTeX resume template. |
 | `MASTER_RESUME_TEX_URL` | *(empty)* | Optional direct `.tex` URL to download before a run. |
 | `MATCH_THRESHOLD` | `65` | Min score (0-100) for artifact generation. |
@@ -217,7 +223,7 @@ python -m pytest tests/ -v
 
 ## Tech stack
 
-**AI:** Qwen3 8B (Ollama) · Sentence-Transformers (BGE-small) · ChromaDB · LangGraph
+**AI:** Qwen3 8B (Ollama) with optional NVIDIA NIM / Sarvam fallback · Sentence-Transformers (BGE-small) · ChromaDB · LangGraph
 **Backend:** Python · requests + BeautifulSoup + tenacity · FastAPI · APScheduler
 **Storage:** JSON files via a repository layer
 **Testing:** pytest (39 tests)
