@@ -3,6 +3,7 @@
 Subcommands:
   run       Execute the full pipeline (scrape + match + generate + report).
   scrape    Only run the scrapers and persist raw jobs.
+  doctor    Check local/API readiness before a full run.
   stats     Show tracker / repository counts.
   review    Show applications waiting for approval.
   approve   Mark an application approved for a future apply step.
@@ -118,6 +119,34 @@ def cmd_scrape(args: argparse.Namespace) -> int:
         by_source[j.source] = by_source.get(j.source, 0) + 1
     for src, count in sorted(by_source.items()):
         print(f"  {src}: {count}")
+    return 0
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    """Run preflight checks before a full experiment."""
+    ensure_dirs()
+    from app.services.doctor_service import DoctorService
+
+    checks = DoctorService().run(test_llm=args.test_llm)
+    print("\n=== Career Copilot Doctor ===\n")
+    rows = [
+        {
+            "status": "OK" if check.ok else "FAIL",
+            "name": check.name,
+            "detail": check.detail,
+        }
+        for check in checks
+    ]
+    _print_table(rows, [("status", "Status"), ("name", "Check"), ("detail", "Detail")])
+    hard_failures = [
+        c
+        for c in checks
+        if not c.ok and c.name not in {"latex_compiler"}
+    ]
+    if hard_failures:
+        print("\nFix failed checks before running the full pipeline.")
+        return 1
+    print("\nReady for a pipeline run.")
     return 0
 
 
@@ -259,6 +288,15 @@ def build_parser() -> argparse.ArgumentParser:
         help="Comma-separated source stems to enable (default: all).",
     )
     p_scrape.set_defaults(func=cmd_scrape)
+
+    # doctor
+    p_doctor = sub.add_parser("doctor", help="Check readiness before a full run.")
+    p_doctor.add_argument(
+        "--test-llm",
+        action="store_true",
+        help="Make one tiny generation call through the configured LLM router.",
+    )
+    p_doctor.set_defaults(func=cmd_doctor)
 
     # stats
     p_stats = sub.add_parser("stats", help="Show repository / tracker stats.")

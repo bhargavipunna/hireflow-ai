@@ -23,6 +23,13 @@ def test_parser_scrape():
     assert args.sources == "wellfound,remote"
 
 
+def test_parser_doctor():
+    parser = build_parser()
+    args = parser.parse_args(["doctor", "--test-llm"])
+    assert args.command == "doctor"
+    assert args.test_llm is True
+
+
 def test_parser_serve_defaults():
     parser = build_parser()
     args = parser.parse_args(["serve"])

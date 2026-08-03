@@ -100,6 +100,16 @@ An Overleaf project page URL is not a direct `.tex` file, so export the
 source into `data/resume/resume.tex` unless you have Overleaf Git access.
 
 ### Run the full pipeline
+Before a full run, check local readiness:
+
+```bash
+python -m app.cli.main doctor
+python -m app.cli.main doctor --test-llm
+```
+
+`doctor --test-llm` makes one tiny generation call through your configured
+provider order, so use it after adding NVIDIA or Sarvam keys.
+
 ```bash
 python -m app.cli.main run
 ```
@@ -129,6 +139,7 @@ python -m app.cli.main reject <job_id> --notes "Not relevant"
 |---------|-------------|
 | `python -m app.cli.main run` | Full pipeline (scrape → match → generate → report). |
 | `python -m app.cli.main scrape --sources wellfound,remote` | Scrape only (optional source filter). |
+| `python -m app.cli.main doctor` | Check resume, LLM, scraper, and LaTeX readiness. |
 | `python -m app.cli.main stats` | Show repository counts and top matches. |
 | `python -m app.cli.main review` | Show applications waiting for approval. |
 | `python -m app.cli.main approve <job_id>` | Approve an application for a future apply step. |
